@@ -2,11 +2,6 @@
 #define GPIO_H
 #include "mcu_config.h"
 #include <stddef.h>
-typedef enum{
-	GPIO_PORT_A,
-	GPIO_PORT_B,
-	GPIO_PORT_C
-}GPIO_PORT_NAME;
 
 #define GPIO_MODE_INPUT 0b00
 #define GPIO_MODE_OUTPUT_10MHz 0b01
@@ -23,12 +18,18 @@ typedef enum{
 #define GPIO_CNF_PUSH_PULL_ALT 0b10
 #define GPIO_CNF_OPEN_DRAIN_ALT 0b11
 
-void enableGPIOClock(GPIO_PORT_NAME);
-GPIO_TypeDef* portToGPIO(GPIO_PORT_NAME);
-uint8_t gpioPortIndex(GPIO_PORT_NAME);
-void pinMode(GPIO_PORT_NAME gpio_port, uint8_t pin, uint8_t mode, uint8_t cnf, uint8_t pull);
-void pinModeMulti(GPIO_PORT_NAME gpio_port, uint8_t* pins, size_t pins_number, uint8_t mode, uint8_t cnf, uint8_t pull);
-void digitalWrite(GPIO_PORT_NAME, uint8_t, uint8_t);
-uint8_t digitalRead(GPIO_PORT_NAME, uint8_t);
+typedef struct Pin_t{
+	GPIO_TypeDef *port;
+	uint8_t number;
+};
+
+
+void enableGPIOClock(GPIO_TypeDef *port);
+uint8_t gpioPortIndex(GPIO_TypeDef *port);
+void pinMode(Pin_t pin, uint8_t mode, uint8_t cnf, uint8_t pull);
+void pinModeMulti(Pin_t* pins, size_t pins_number, uint8_t mode, uint8_t cnf, uint8_t pull);
+void digitalWrite(Pin_t pin, uint8_t value);
+uint8_t digitalRead(Pin_t pin);
+void pinToggle(Pin_t pin);
 
 #endif

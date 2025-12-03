@@ -8,7 +8,7 @@ typedef enum{
 	EXTI_BOTH_EDGES
 } ExtiEdge;
 
-void extiInit(GPIO_PORT_NAME, uint8_t, ExtiEdge);
-void extiClearFlag(uint8_t pin);
+void extiInit(Pin_t pin, ExtiEdge);
+void extiClearFlag(Pin_t pin);
 
 #endif

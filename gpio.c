@@ -1,58 +1,36 @@
 #include "gpio.h"
 
-void enableGPIOClock(GPIO_PORT_NAME gpio_port){
-	switch(gpio_port){
-		case GPIO_PORT_A:{
-			RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
-			break;
-		}
-		case GPIO_PORT_B:{
-			RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
-			break;
-		}
-		case GPIO_PORT_C:{
-			RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
-			break;
-		}
-
+void enableGPIOClock(GPIO_TypeDef *port){
+	if(port == GPIOA){
+		RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
+	}
+	else if(port == GPIOB){
+		RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
+	}
+	else if(port == GPIOC){
+		RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
 	}
 }
 
-GPIO_TypeDef* portToGPIO(GPIO_PORT_NAME gpio_port){
-	switch(gpio_port){
-		case GPIO_PORT_A:{
-			return GPIOA;
-		}
-		case GPIO_PORT_B:{
-			return GPIOB;
-		}
-		case GPIO_PORT_C:{
-			return GPIOC;
-		}
+uint8_t gpioPortIndex(GPIO_Typedef *port){ // @suppress("No return")
+	if(port == GPIOA){
+		return 0;
 	}
-	return 0;
-}
-
-uint8_t gpioPortIndex(GPIO_PORT_NAME port){ // @suppress("No return")
-	switch(port){
-		case GPIO_PORT_A:{
-			return 0;
-		}
-		case GPIO_PORT_B:{
-			return 1;
-		}
-		case GPIO_PORT_C:{
-			return 2;
-		}
+	else if(port == GPIOB){
+		return 1;
+	}
+	else if(port == GPIOC){
+		return 2;
 	}
 	return 0;
 }
 
 
-void pinMode(GPIO_PORT_NAME gpio_port, uint8_t pin, uint8_t mode, uint8_t cnf, uint8_t pull){
-	GPIO_TypeDef* GPIOx = portToGPIO(gpio_port);
-	uint8_t shift = 4*(pin < 8? pin: pin - 8);
-	if(pin < 8){
+void pinMode(Pin_t pin, uint8_t mode, uint8_t cnf, uint8_t pull){
+	GPIO_TypeDef* GPIOx = pin.port;
+	uint8_t pin_number = pin.number;
+	uint8_t shift = 4*(pin_number < 8? pin_number: pin_number - 8);
+	if(pin_number < 8){
 		GPIOx->CRL &= ~( 0b1111 << shift);
 		GPIOx->CRL |= ((cnf << 2) | mode) << shift;
 	}
@@ -62,46 +40,48 @@ void pinMode(GPIO_PORT_NAME gpio_port, uint8_t pin, uint8_t mode, uint8_t cnf, u
 	}
 	if(mode == GPIO_MODE_INPUT && cnf == GPIO_CNF_INPUT_PU_PD){
 		if(pull){
-			GPIOx->ODR |= 1 << pin;
+			GPIOx->ODR |= 1 << pin_number;
 		}
 		else{
-			GPIOx->ODR &= ~(1 << pin);
+			GPIOx->ODR &= ~(1 << pin_number);
 		}
 	}
 }
 
 
 
-void pinModeMulti(GPIO_PORT_NAME gpio_port, uint8_t* pins, size_t pins_number, uint8_t mode, uint8_t cnf, uint8_t pull){
+void pinModeMulti(Pin_t *pins, size_t pins_number, uint8_t mode, uint8_t cnf, uint8_t pull){
 	for(uint8_t i = 0; i < pins_number; i++)
-		pinMode(gpio_port, pins[i], mode, cnf, pull);
+		pinMode(pins[i], mode, cnf, pull);
 }
 
 
-void pinToggle(GPIO_PORT_NAME gpio_port, uint8_t pin){
-	GPIO_TypeDef *GPIOx = portToGPIO(gpio_port);
-	uint8_t pin_value = GPIOx->ODR & (1U << pin);
-	if(pin_value){
-		GPIOx->BSRR = (1U << (pin + 16));
+void pinToggle(Pin_t pin){
+	GPIO_TypeDef *GPIOx = pin.port;
+	uint8_t pin_number = pin.number;
+	if(GPIOx->ODR & (1U << pin_number)){
+		GPIOx->BSRR = (1U << (pin_number + 16));
 	}
 	else{
-		GPIOx->BSRR = 1U << pin;
+		GPIOx->BSRR = 1U << pin_number;
 	}
 }
 
 
-void digitalWrite(GPIO_PORT_NAME gpio_port, uint8_t pin, uint8_t value){
-	GPIO_TypeDef* GPIOx = portToGPIO(gpio_port);
+void digitalWrite(Pin_t pin, uint8_t value){
+	GPIO_TypeDef* GPIOx = pin.port;
+	uint8_t pin_number = pin.number;
 	if(value == 1){
-		GPIOx->BSRR = 1 << pin;
+		GPIOx->BSRR = 1 << pin_number;
 	}
 	else{
-		GPIOx->BRR = 1 << pin;
+		GPIOx->BSRR = 1 << (pin_number+16);
 	}
 }
 
 
-uint8_t digitalRead(GPIO_PORT_NAME gpio_port, uint8_t pin){
-	GPIO_TypeDef* GPIOx = portToGPIO(gpio_port);
-	return (GPIOx->IDR & (1 << pin))? 1 : 0;
+uint8_t digitalRead(Pin_t pin){
+	GPIO_TypeDef* GPIOx = pin.port;
+	uint8_t pin_number = pin.number;
+	return (GPIOx->IDR & (1 << pin_number))? 1 : 0;
 }

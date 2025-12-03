@@ -5,4 +5,5 @@
 #include "tim.h"
 #include "exti.h"
 #include "pwm.h"
+#include "utilities.h"
 #endif

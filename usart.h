@@ -2,29 +2,26 @@
 #define USART_H
 #include <stdint.h>
 #include "mcu_config.h"
+#include "gpio.h"
 #define USART_BUFFER_SIZE 257
 #define USART_BUFFER_MASK (USART_BUFFER_SIZE - 1)
 
-typedef enum {
-	USART_1 = 0,
-	USART_2,
-	USART_COUNT
-}USART_PORT_NAME;
-
-extern USART_TypeDef *USARTs[2];
 extern volatile uint16_t rx_heads[2], tx_heads[2];
 extern volatile uint16_t rx_tails[2], tx_tails[2];
 extern volatile char usartRXBuffers[2][USART_BUFFER_SIZE], usartTXBuffers[2][USART_BUFFER_SIZE];
 
-void echo(USART_PORT_NAME);
-void usartInit(USART_PORT_NAME, uint32_t);
-uint16_t usartAvailable(USART_PORT_NAME);
-void usartWriteByte(USART_PORT_NAME, char);
-void usartWriteLine(USART_PORT_NAME, const char*);
+void echo(USART_TypeDef *USARTx);
+void usartInit(USART_TypeDef *USARTx, uint32_t);
+uint16_t usartAvailable(USART_TypeDef *USARTx);
+void usartWriteByte(USART_TypeDef *USARTx, char);
+void usartWriteLine(USART_TypeDef *USARTx, const char*);
 
-char usartReadByte(USART_PORT_NAME port_id);
-void usartReadBytes(USART_PORT_NAME port_id, char *, uint32_t);
+char usartReadByte(USART_TypeDef *USARTx);
+void usartReadBytes(USART_TypeDef *USARTx, char *, uint32_t);
 
-void USART_IRQHandler_Generic(USART_PORT_NAME);
+void USART_IRQHandler_Generic(USART_TypeDef *USARTx);
+
+
 uint32_t usartDiv(uint32_t F_CPU, uint32_t baud_rate);
+uint8_t usartIndex(USART_TypeDef *USARTx);
 #endif
