@@ -1,6 +1,13 @@
 #include "tim.h"
 volatile uint32_t msTicks = 0;
+static TimHandler_t tim_handlers[3] = {NULL, NULL, NULL};
 
+static uint8_t getTimIndex(TIM_TypeDef *TIMx){
+	if(TIMx == TIM1) return 0;
+	if(TIMx == TIM2) return 1;
+	if(TIMx == TIM3) return 2;
+	return 99;
+}
 
 void sysTickInit(void){
 	SysTick_Config(SystemCoreClock / 1000);
@@ -47,3 +54,22 @@ void timerInit(TIM_TypeDef *TIMx, uint32_t psc, uint32_t arr, uint8_t debounce){
 	}
 }
 
+// HANDLER
+
+void timRegisterHandler(TIM_TypeDef *TIMx, TimHandler_t handler){
+	uint8_t index = getTimIndex(TIMx);
+	if(index < 3){
+		tim_handlers[index] = handler;
+	}
+}
+
+
+__attribute__((weak)) void TIM3_IRQHandler(void){
+	if(TIM3->SR & TIM_SR_UIF){
+		TIM3->SR &= ~TIM_SR_UIF;
+	}
+
+	if(tim_handlers[2] != NULL){
+		tim_handlers[2]();
+	}
+}

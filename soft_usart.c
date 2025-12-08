@@ -1,0 +1,181 @@
+#include "soft_usart.h"
+#define SOFT_UART_TIM TIM3
+#define SOFT_UART_BITS_PER_FRAME 10 // 1 start + 8 data + 1 stop
+typedef struct {
+    uint8_t rx_byte;
+    uint8_t bit_count;
+    uint32_t arr_value;
+} SoftUartRxState_t;
+
+typedef struct {
+    uint8_t tx_byte;
+    uint8_t bit_count;
+    uint8_t tx_busy;
+} SoftUartTxState_t;
+
+volatile char soft_uart_rx_buffer[SOFT_UART_BUFFER_SIZE],
+              soft_uart_tx_buffer[SOFT_UART_BUFFER_SIZE];
+volatile uint16_t rx_tail = 0, rx_head = 0,
+                  tx_tail = 0, tx_head = 0;
+static SoftUartRxState_t rx_state = {0};
+static SoftUartTxState_t tx_state = {0};
+Pin_t soft_uart_rx_pin,
+      soft_uart_tx_pin;
+
+void softUartInit(Pint_t rx, Pin_t tx, uint32_t baud_rate){
+    pinMode(tx, GPIO_MODE_OUTPUT_50MHz, GPIO_CNF_PUSH_PULL, 0);
+    pinMode(rx, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PU_PD, 1);
+    uint32_t soft_uart_arr = 8000000 / baud_rate;
+    rx_state.arr_value = soft_uart_arr;
+    timerInit(SOFT_UART_TIM, 0, soft_uart_arr, 1);
+    extiInit(rx, EXTI_FALLING_EDGE);
+    soft_uart_rx_pin = rx;
+    soft_uart_tx_pin = tx;
+    
+    extiRegisterHandler(rx, softUartRxStartHandler);
+    timRegisterHandler(SOFT_UART_TIM, softUartTimDispatch); // поменять на dispatch
+
+    soft_uart_tx_pin.port->BSRR = (1 << soft_uart_tx_pin.number);
+}  
+
+
+static void softUartRxStartHandler(void){
+    EXTI->IMR &= ~(1 << soft_uart_rx_pin.pinNumber);
+
+    rx_state.bit_count = 0;
+    rx_state.rx_byte = 0;
+
+    SOFT_UART_TIM->CNT = rx_state.arr_value / 2;
+    SOFT_UART_TIM->CR1 |= TIM_CR1_CEN;
+}
+
+
+static void softUartRxTimHandler(void){
+    uint32_t port_idr = soft_uart_rx_pin.port->IDR;
+    uint8_t pin_mask = 1 << soft_uart_rx_pin.number;
+    uint8_t current_bit = 0;
+    
+    if(port_idr & pin_mask){
+        current_bit = 1;
+    }
+
+    rx_state.bit_count++;
+
+    if(rx_state.bit_count >= 1 && rx_state.bit_count <=8){
+        uint8_t shift_amount = rx_state.bit_count - 1;
+        uint8_t bit_mask = (1 << shift_amount);
+        if(current_bit){
+            rx_state.rx_byte |= bit_mask;
+        }
+        else{
+            rx_state.rx_byte &= ~bit_mask;
+        }
+    }
+    else if(rx_state.bit_count == 9){
+        if(current_bit ==0){
+            //TODO Обработка ошибки
+        }
+    }
+    else if(rx_state.bit_count == 10){
+
+        SOFT_UART_TIM->CR1 &= ~TIM_CR1_CEN;
+        EXTI->IMR |= (1 << soft_uart_rx_pin.number);
+        uint16_t next_head = (rx_head + 1) & SOFT_UART_BUFFER_MASK;
+        if(next_head != rx_tail){
+            soft_uart_rx_buffer[rx_head] = rx_state.rx_byte;
+            rx_head = next_head;
+        }
+        rx_state.bit_count = 0;
+    }
+}
+
+static inline void txSetHigh(void){
+    soft_uart_tx_pin.port->BSRR = (1 << soft_uart_tx_pin.number);
+}
+
+
+static inline void txSetLow(void){
+    soft_uart_tx_pin.port->BRR = (1 << soft_uart_tx_pin.number);
+}
+
+
+static void softUartTxTimHandler(void){
+    if(tx_state.bit_count == 0){
+        txSetLow();
+    }
+    else if(tx_state.bit_count >= 1 && tx_state.bit_count <=8){
+        uint8_t bit_index = tx_state.bit_count - 1;
+        if(tx_state.tx_byte & (1 << bit_index)){
+            txSetHigh();
+        }
+        else{
+            txSetLow();
+        }
+    }
+    else if(tx_state.bit_count == 9){
+        txSetHigh();
+    }
+    else if(tx_state.bit_count == 10){
+        SOFT_UART_TIM->CR1 &= ~TIM_CR1_CEN;
+        tx_state.tx_busy = 0;
+        if(tx_head != tx_tail){
+            softUartStartTx();
+        }
+    }
+    tx_state.bit_count++;
+}
+
+
+static void softUartStartTx(void){
+    if(tx_head == tx_tail) return;
+
+    tx_state.tx_byte = soft_uart_tx_buffer[tx_tail];
+    tx_tail = (tx_tail + 1) & SOFT_UART_BUFFER_MASK;
+
+    tx_state.bit_count = 0;
+    tx_state.tx_busy = 1;
+
+    SOFT_UART_TIM->CNT = 0;
+    SOFT_UART_TIM-> CR1 |= TIM_CR1_CEN;
+}
+
+
+void softUartPutChar(char data){
+    uint16_t next_head = (tx_head + 1) & SOFT_UART_BUFFER_MASK;
+
+    if(next_head != tx_tail){
+        soft_uart_tx_buffer[tx_head] = data;
+        tx_head = next_head;
+    }
+
+    if(!tx_state.tx_busy){
+        softUartStartTx();
+    }
+}
+
+static void softUartTimDispatch(void){
+    if((EXTI->IMR & (1 << soft_uart_rx_pin.number)) == 0){
+        softUartRxTimHandler();
+    }
+    else if(tx_state.tx_busy){
+        softUartTxTimHandler();
+    }
+    else if(tx_head != tx_tail){
+        softUartStartTx();
+    }
+}
+
+
+uint16_t softUartAvailable(void){
+    return (rx_head - rx_tail) & SOFT_UART_BUFFER_MASK;
+}
+
+
+char softUartReadByte(void){
+    if(rx_head == rx_tail){
+        return 0;
+    }
+    char result = soft_uart_rx_buffer[rx_tail];
+    rx_tail = (rx_tail + 1) & SOFT_UART_BUFFER_MASK;
+    return result;
+}
