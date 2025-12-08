@@ -6,4 +6,6 @@
 #include "exti.h"
 #include "pwm.h"
 #include "utilities.h"
+
+#include "soft_usart.h"
 #endif
