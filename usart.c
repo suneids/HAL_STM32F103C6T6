@@ -35,7 +35,7 @@ uint16_t usartAvailable(USART_TypeDef *USARTx){
 
 void usartWriteByte(USART_TypeDef *USARTx, char byte){
 	uint8_t port_id = usartIndex(USARTx);
-	char *usartTXBuffer = usartTXBuffers[port_id];
+	volatile char *usartTXBuffer = usartTXBuffers[port_id];
 	uint16_t next_head = (tx_heads[port_id] + 1) % USART_BUFFER_SIZE;
 	if(next_head == tx_tails[port_id]){
 		return;
@@ -48,7 +48,7 @@ void usartWriteByte(USART_TypeDef *USARTx, char byte){
 
 void usartWriteLine(USART_TypeDef *USARTx, const char* str){
 	uint8_t port_id = usartIndex(USARTx);
-	char *usartTXBuffer = usartTXBuffers[port_id];
+	volatile char *usartTXBuffer = usartTXBuffers[port_id];
 	while(*str != '\0'){
 		uint16_t next_head = (tx_heads[port_id] + 1) % USART_BUFFER_SIZE;
 		if(next_head == tx_tails[port_id]){
@@ -63,7 +63,7 @@ void usartWriteLine(USART_TypeDef *USARTx, const char* str){
 
 char usartReadByte(USART_TypeDef *USARTx){
 	uint8_t port_id = usartIndex(USARTx);
-	char *usartRXBuffer = usartRXBuffers[port_id];
+	volatile char *usartRXBuffer = usartRXBuffers[port_id];
 	if(rx_tails[port_id] == rx_heads[port_id]){
 		return '\0';
 	}
@@ -75,7 +75,7 @@ char usartReadByte(USART_TypeDef *USARTx){
 
 void usartReadBytes(USART_TypeDef *USARTx, char *buf, uint32_t max_len){
 	uint8_t port_id = usartIndex(USARTx);
-	char *usartRXBuffer = usartRXBuffers[port_id];
+	volatile char *usartRXBuffer = usartRXBuffers[port_id];
 	uint32_t current_len = 0, end = 0;
 	while((current_len + 1 < max_len) && rx_tails[port_id] != rx_heads[port_id]){
 		char last_byte = usartRXBuffer[rx_tails[port_id]];

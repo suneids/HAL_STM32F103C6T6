@@ -18,10 +18,10 @@
 #define GPIO_CNF_PUSH_PULL_ALT 0b10
 #define GPIO_CNF_OPEN_DRAIN_ALT 0b11
 
-typedef struct Pin_t{
+typedef struct{
 	GPIO_TypeDef *port;
 	uint8_t number;
-};
+} Pin_t;
 
 
 void enableGPIOClock(GPIO_TypeDef *port);

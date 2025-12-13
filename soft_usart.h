@@ -10,9 +10,8 @@
 uint16_t softUartAvailable(void);
 char softUartReadByte(void);
 void softUartPutChar(char data);
+void softUartPutString(const char *data);
 
-TIM_TypeDef *const SOFT_UART_TIM = TIM3;
-
-void softUartInit(Pint_t rx, Pin_t tx, uint32_t baud_rate);
+void softUartInit(Pin_t rx, Pin_t tx, uint32_t baud_rate);
 
 #endif

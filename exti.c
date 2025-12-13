@@ -67,7 +67,7 @@ __attribute__((weak)) void EXTI0_IRQHandler(void){
 }
 
 
-__attribute__((weak) void EXTI1_IRQHandler(void){
+__attribute__((weak)) void EXTI1_IRQHandler(void){
 	extiGroupDispatch(1, 1);
 	if(EXTI1_User_Handler) EXTI1_User_Handler();
 }
@@ -99,5 +99,5 @@ __attribute__((weak)) void EXTI9_5_IRQHandler(void){
 
 __attribute__((weak)) void EXTI15_10_IRQHandler(void){
 	extiGroupDispatch(10, 15);
-	if(EXTI5_10_User_Handler) EXTI515_10_User_Handler();
+	if(EXTI15_10_User_Handler) EXTI15_10_User_Handler();
 }

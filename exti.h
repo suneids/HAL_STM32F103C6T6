@@ -1,4 +1,4 @@
-#ifndef EXTI_C
+#ifndef EXTI_H
 #define EXTI_H
 #include "gpio.h"
 

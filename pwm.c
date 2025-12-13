@@ -8,6 +8,25 @@ const uint32_t CCMR_OCxPE[4] = {TIM_CCMR1_OC1PE, TIM_CCMR1_OC2PE,
 const uint32_t CCER_CCxE[4] = {TIM_CCER_CC1E, TIM_CCER_CC2E,
 						 TIM_CCER_CC3E, TIM_CCER_CC4E };
 
+
+PinMap_t map[12] = {
+    {{GPIOA, 8}, TIM1, 1},
+    {{GPIOA, 9}, TIM1, 2},
+    {{GPIOA, 10}, TIM1, 3},
+    {{GPIOA, 11}, TIM1, 4},
+
+    {{GPIOA, 0}, TIM2, 1},
+    {{GPIOA, 1}, TIM2, 2},
+    {{GPIOA, 2}, TIM2, 3},
+    {{GPIOA, 3}, TIM2, 4},
+
+    {{GPIOC, 6}, TIM3, 1},
+    {{GPIOC, 7}, TIM3, 2},
+    {{GPIOC, 8}, TIM3, 3},
+    {{GPIOC, 9}, TIM3, 4},
+};
+
+
 void pwmInit(Pin_t pin){
 	TimerChannel_t pin_metadata = getTIMChannel(pin); 
 	TIM_TypeDef *TIMx = pin_metadata.TIMx;
@@ -28,7 +47,7 @@ void pwmWrite(Pin_t pin, uint16_t value){
 	TimerChannel_t pin_metadata = getTIMChannel(pin); 
 	TIM_TypeDef *TIMx = pin_metadata.TIMx;
 	uint8_t channel = pin_metadata.channel;
-	__IO uint16_t *CCRs[4] = {&TIMx->CCR1, &TIMx->CCR2, &TIMx->CCR3, &TIMx->CCR4};
+	__IO uint32_t *CCRs[4] = {&TIMx->CCR1, &TIMx->CCR2, &TIMx->CCR3, &TIMx->CCR4};
 	if((channel > 0) && (channel < 5) && (value <= TIMx->ARR)){
 		*CCRs[channel - 1] = value;
 	}

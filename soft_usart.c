@@ -1,6 +1,11 @@
 #include "soft_usart.h"
 #define SOFT_UART_TIM TIM3
 #define SOFT_UART_BITS_PER_FRAME 10 // 1 start + 8 data + 1 stop
+
+static void softUartRxStartHandler(void);
+static void softUartTimDispatch(void);
+static void softUartStartTx(void);
+
 typedef struct {
     uint8_t rx_byte;
     uint8_t bit_count;
@@ -22,7 +27,7 @@ static SoftUartTxState_t tx_state = {0};
 Pin_t soft_uart_rx_pin,
       soft_uart_tx_pin;
 
-void softUartInit(Pint_t rx, Pin_t tx, uint32_t baud_rate){
+void softUartInit(Pin_t rx, Pin_t tx, uint32_t baud_rate){
     pinMode(tx, GPIO_MODE_OUTPUT_50MHz, GPIO_CNF_PUSH_PULL, 0);
     pinMode(rx, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PU_PD, 1);
     uint32_t soft_uart_arr = 8000000 / baud_rate;
@@ -40,7 +45,7 @@ void softUartInit(Pint_t rx, Pin_t tx, uint32_t baud_rate){
 
 
 static void softUartRxStartHandler(void){
-    EXTI->IMR &= ~(1 << soft_uart_rx_pin.pinNumber);
+    EXTI->IMR &= ~(1 << soft_uart_rx_pin.number);
 
     rx_state.bit_count = 0;
     rx_state.rx_byte = 0;
@@ -152,6 +157,14 @@ void softUartPutChar(char data){
         softUartStartTx();
     }
 }
+
+void softUartPutString(const char *data){
+	while(*data){
+		softUartPutChar(*data);
+		data++;
+	}
+}
+
 
 static void softUartTimDispatch(void){
     if((EXTI->IMR & (1 << soft_uart_rx_pin.number)) == 0){

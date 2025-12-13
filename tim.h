@@ -1,6 +1,7 @@
 #ifndef TIM_H
 #define TIM_H
 #include "mcu_config.h"
+#include <stddef.h>
 extern volatile uint32_t msTicks;
 
 typedef void(*TimHandler_t)(void);

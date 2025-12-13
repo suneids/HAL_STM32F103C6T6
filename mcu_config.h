@@ -6,5 +6,5 @@
 #endif
 
 #include "stm32f1xx.h"
-
+#define SYS_CLK_HZ 8000000
 #endif
