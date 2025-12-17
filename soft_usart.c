@@ -38,9 +38,10 @@ void softUartInit(Pin_t rx, Pin_t tx, uint32_t baud_rate){
     soft_uart_tx_pin = tx;
     
     extiRegisterHandler(rx, softUartRxStartHandler);
-    timRegisterHandler(SOFT_UART_TIM, softUartTimDispatch); // поменять на dispatch
+    timRegisterHandler(SOFT_UART_TIM, softUartTimDispatch);
 
     soft_uart_tx_pin.port->BSRR = (1 << soft_uart_tx_pin.number);
+	NVIC_EnableIRQ(TIM3_IRQn);
 }  
 
 
@@ -146,7 +147,8 @@ static void softUartStartTx(void){
 
 
 void softUartPutChar(char data){
-    uint16_t next_head = (tx_head + 1) & SOFT_UART_BUFFER_MASK;
+    __disable_irq();
+	uint16_t next_head = (tx_head + 1) & SOFT_UART_BUFFER_MASK;
 
     if(next_head != tx_tail){
         soft_uart_tx_buffer[tx_head] = data;
@@ -156,6 +158,7 @@ void softUartPutChar(char data){
     if(!tx_state.tx_busy){
         softUartStartTx();
     }
+    __enable_irq();
 }
 
 void softUartPutString(const char *data){

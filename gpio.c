@@ -10,6 +10,7 @@ void enableGPIOClock(GPIO_TypeDef *port){
 	else if(port == GPIOC){
 		RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
 	}
+	(void)port->CRL;
 }
 
 

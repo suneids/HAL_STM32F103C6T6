@@ -38,7 +38,7 @@ void timerInit(TIM_TypeDef *TIMx, uint32_t psc, uint32_t arr, uint8_t debounce){
 	}
 	else if(TIMx == TIM3){
 		RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
-		if(debounce) NVIC_EnableIRQ(TIM3_IRQn);
+//		if(debounce) NVIC_EnableIRQ(TIM3_IRQn); //Вызывает hard fault, пока не придумал решение
 	}
 
 	TIMx->PSC = psc;
@@ -66,7 +66,7 @@ void timRegisterHandler(TIM_TypeDef *TIMx, TimHandler_t handler){
 }
 
 
-__attribute__((weak)) void TIM3_IRQHandler(void){
+void TIM3_IRQHandler(void){
 	if(TIM3->SR & TIM_SR_UIF){
 		TIM3->SR &= ~TIM_SR_UIF;
 	}
