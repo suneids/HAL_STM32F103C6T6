@@ -30,7 +30,7 @@ Pin_t soft_uart_rx_pin,
 void softUartInit(Pin_t rx, Pin_t tx, uint32_t baud_rate){
     pinMode(tx, GPIO_MODE_OUTPUT_50MHz, GPIO_CNF_PUSH_PULL, 0);
     pinMode(rx, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PU_PD, 1);
-    uint32_t soft_uart_arr = 8000000 / baud_rate;
+    uint32_t soft_uart_arr = SYS_CLK_HZ / baud_rate;
     rx_state.arr_value = soft_uart_arr;
     timerInit(SOFT_UART_TIM, 0, soft_uart_arr, 1);
     extiInit(rx, EXTI_FALLING_EDGE);
@@ -41,6 +41,7 @@ void softUartInit(Pin_t rx, Pin_t tx, uint32_t baud_rate){
     timRegisterHandler(SOFT_UART_TIM, softUartTimDispatch);
 
     soft_uart_tx_pin.port->BSRR = (1 << soft_uart_tx_pin.number);
+    TIM3->CR1 |= TIM_CR1_CEN;
 	NVIC_EnableIRQ(TIM3_IRQn);
 }  
 
@@ -51,8 +52,8 @@ static void softUartRxStartHandler(void){
     rx_state.bit_count = 0;
     rx_state.rx_byte = 0;
 
-    SOFT_UART_TIM->CNT = rx_state.arr_value / 2;
-    SOFT_UART_TIM->CR1 |= TIM_CR1_CEN;
+//    SOFT_UART_TIM->CNT = rx_state.arr_value / 2;
+//    SOFT_UART_TIM->CR1 |= TIM_CR1_CEN;
 }
 
 
@@ -78,13 +79,13 @@ static void softUartRxTimHandler(void){
         }
     }
     else if(rx_state.bit_count == 9){
-        if(current_bit ==0){
+        if(current_bit == 0){
             //TODO Обработка ошибки
         }
     }
     else if(rx_state.bit_count == 10){
 
-        SOFT_UART_TIM->CR1 &= ~TIM_CR1_CEN;
+//        SOFT_UART_TIM->CR1 &= ~TIM_CR1_CEN;
         EXTI->IMR |= (1 << soft_uart_rx_pin.number);
         uint16_t next_head = (rx_head + 1) & SOFT_UART_BUFFER_MASK;
         if(next_head != rx_tail){
@@ -122,7 +123,7 @@ static void softUartTxTimHandler(void){
         txSetHigh();
     }
     else if(tx_state.bit_count == 10){
-        SOFT_UART_TIM->CR1 &= ~TIM_CR1_CEN;
+//        SOFT_UART_TIM->CR1 &= ~TIM_CR1_CEN;
         tx_state.tx_busy = 0;
         if(tx_head != tx_tail){
             softUartStartTx();
@@ -141,8 +142,8 @@ static void softUartStartTx(void){
     tx_state.bit_count = 0;
     tx_state.tx_busy = 1;
 
-    SOFT_UART_TIM->CNT = 0;
-    SOFT_UART_TIM-> CR1 |= TIM_CR1_CEN;
+//    SOFT_UART_TIM->CNT = 0;
+//    SOFT_UART_TIM-> CR1 |= TIM_CR1_CEN;
 }
 
 
