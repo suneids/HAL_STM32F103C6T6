@@ -24,6 +24,14 @@ void SysTick_Handler(void){
 }
 
 
+void sysTickDelay(uint32_t ms){
+	uint32_t start = millis();
+	while((millis() - start) < ms){
+		__NOP();
+	}
+}
+
+
 
 void timerInit(TIM_TypeDef *TIMx, uint32_t psc, uint32_t arr, uint8_t debounce){
 //	if(TIMx == TIM1){

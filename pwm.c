@@ -20,12 +20,11 @@ PinMap_t map[13] = {
     {{GPIOA, 2}, TIM2, 3},
     {{GPIOA, 3}, TIM2, 4},
 
-    {{GPIOC, 6}, TIM3, 1},
-    {{GPIOC, 7}, TIM3, 2},
+    {{GPIOA, 6}, TIM3, 1},
+    {{GPIOA, 7}, TIM3, 2},
     {{GPIOB, 0}, TIM3, 3},
 	{{GPIOB, 1}, TIM3, 4},
 
-	{{GPIOB, 5}, TIM3, 2},
 };
 
 

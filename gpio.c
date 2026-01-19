@@ -33,11 +33,11 @@ void pinMode(Pin_t pin, uint8_t mode, uint8_t cnf, uint8_t pull){
 	uint8_t pin_number = pin.number;
 	uint8_t shift = 4*(pin_number < 8? pin_number: pin_number - 8);
 	if(pin_number < 8){
-		GPIOx->CRL &= ~( 0b1111 << shift);
+		GPIOx->CRL &= ~( 0xFUL << shift);
 		GPIOx->CRL |= ((cnf << 2) | mode) << shift;
 	}
 	else{
-		GPIOx->CRH &= ~( 0b1111 << shift);
+		GPIOx->CRH &= ~( 0xFUL << shift);
 		GPIOx->CRH |= ((cnf << 2) | mode) << shift;
 	}
 	if(mode == GPIO_MODE_INPUT && cnf == GPIO_CNF_INPUT_PU_PD){

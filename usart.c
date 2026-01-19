@@ -13,7 +13,7 @@ void usartInit(USART_TypeDef *USARTx, uint32_t  baud_rate){
 		Pin_t tx = {GPIOA, 9}, rx = {GPIOA, 10};
 		pinMode(tx, GPIO_MODE_OUTPUT_50MHz, GPIO_CNF_PUSH_PULL_ALT, 0);
 		pinMode(rx, GPIO_MODE_INPUT, GPIO_CNF_FLOATING, 0);
-		NVIC_EnableIRQ(USART1_IRQn);	
+		NVIC_EnableIRQ(USART1_IRQn);
 	}
 	else if(USARTx == USART2){
 		RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
@@ -34,6 +34,7 @@ uint16_t usartAvailable(USART_TypeDef *USARTx){
 }
 
 void usartWriteByte(USART_TypeDef *USARTx, char byte){
+	while(!(USARTx->SR & USART_SR_TXE));
 	uint8_t port_id = usartIndex(USARTx);
 	volatile char *usartTXBuffer = usartTXBuffers[port_id];
 	uint16_t next_head = (tx_heads[port_id] + 1) % USART_BUFFER_SIZE;
@@ -111,7 +112,8 @@ uint8_t usartIndex(USART_TypeDef *USARTx){
 	return 0;
 }
 
-__attribute__((weak)) void USART1_IRQHandler(void){
+
+void USART1_IRQHandler(void){
 	USART_IRQHandler_Generic(USART1);
 }
 
@@ -140,8 +142,13 @@ void USART_IRQHandler_Generic(USART_TypeDef *USARTx){
 			USARTx->DR = usartTXBuffer[tx_tails[port_id]];
 			tx_tails[port_id] = (tx_tails[port_id] + 1) % USART_BUFFER_SIZE;
 		}
-		else{
+		if(tx_tails[port_id] == tx_heads[port_id]){
 			USARTx->CR1 &= ~USART_CR1_TXEIE;
 		}
+	}
+
+	if(USARTx->SR & (USART_SR_ORE | USART_SR_NE | USART_SR_FE)){
+		volatile uint32_t dummy = USARTx->DR;
+		(void)dummy;
 	}
 }

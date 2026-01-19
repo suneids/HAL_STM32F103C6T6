@@ -1,13 +1,13 @@
 #include "utilities.h"
 #include "gpio.h"
 Pin_t led_pin = {GPIOC, ONBOARD_LED_PIN};
-void assert(uint8_t condition){
+void HAL_assert(uint8_t condition){
 	if(!condition){
-		assertFailed();
+		HAL_assertFailed();
 	}
 }
 
-void assertFailed(){
+void HAL_assertFailed(){
 	__disable_irq();//отключить периферию, прерывания
 
 	while(1){
