@@ -12,7 +12,7 @@ Instruction for using modules:
 | void pinToggle(Pin_t pin) | Inverts the current state of the output pin. It is convenient for debugging and display (Heartbeat LED). |
 
 ## How to use
-Firstly, use enableGPIOClock with GPIO which you need.
+- Always call enableGPIOClock() before any other pin configurations to power up the peripheral.
 
 ## USART
 | Functions | Description |
