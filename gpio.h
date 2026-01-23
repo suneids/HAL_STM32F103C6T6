@@ -18,6 +18,9 @@
 #define GPIO_CNF_PUSH_PULL_ALT 0b10
 #define GPIO_CNF_OPEN_DRAIN_ALT 0b11
 
+#define GPIO_PULL 0b01
+#define GPIO_PULL_NONE 0b00
+
 typedef struct{
 	GPIO_TypeDef *port;
 	uint8_t number;
