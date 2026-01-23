@@ -1,6 +1,10 @@
 Selfwritten High Abstractive Layer for STM32F103C6T6
 Instruction for using modules:
-## GPIO
+
+---
+
+<h2 align=center>GPIO</h2>
+
 | Functions | Description |
 | --------- | ----- |
 | void enableGPIOClock(GPIO_TypeDef *port) | Enables clocking (RCC) for the specified port. It is necessary before any manipulation of pins. |
@@ -24,7 +28,8 @@ Instruction for using modules:
 
 ---
 
-## USART
+<h2 align=center>USART</h2>
+
 | Functions | Description |
 | --------- | ----- |
 | void echo(USART_TypeDef *USARTx) | A debug utility that immediately retransmits received data back to the sender. Useful for link testing. |
@@ -61,7 +66,8 @@ if (usartAvailable(USART1)) {
 
 ---
 
-## TIM
+<h2 align=center>TIM</h2>
+
 | Functions | Description |
 | --------- | ----- |
 | void sysTickInit(void) | Configures the system tick timer to generate interrupts every 1ms. Essential for time-base management. |
@@ -96,7 +102,8 @@ while(1) {
 
 ---
 
-## PWM
+<h2 align=center>PWM</h2>
+
 | Functions | Description |
 | --------- | ----- |
 | void pwmInit(Pin_t pin) | Configures the GPIO pin for Alternate Function and initializes the corresponding Timer channel in PWM mode. |
@@ -126,7 +133,8 @@ while(1) {
 
 ---
 
-## I2C
+<h2 align=center>I2C</h2>
+
 | Functions | Description |
 | --------- | ----- |
 | void I2C_Init(I2C_TypeDef *I2Cx, Pin_t SDA, Pin_t SCL) | Sets up the hardware I2C peripheral, including clock speed and GPIO pins configuration (SDA/SCL). |
@@ -157,7 +165,8 @@ I2C_Read_Burst(I2C1, 0x68 << 1, 0x3B, accelData, 6);
 
 ---
 
-## EXTI
+<h2 align=center>EXTI</h2>
+
 | Functions | Description |
 | --------- | ----- |
 | void extiRegisterHandler(Pin_t pin, ExtiHandler_t handler) | Configures the external interrupt line for a specific pin and selects the trigger edge (Rising/Falling/Both). |
@@ -185,7 +194,8 @@ extiRegisterHandler(PA0, myButtonHandler);
 
 ---
 
-## DMA
+<h2 align=center>DMA</h2>
+
 | Functions | Description |
 | --------- | ----- |
 | void DMAInit(DMA_Channel_TypeDef *DMAx, uint32_t peripheral_addr, uint32_t memory_addr, uint16_t data_count) | Configures the Direct Memory Access channel to transfer data between a peripheral and memory without CPU intervention. |
@@ -209,7 +219,8 @@ DMA1_Channel4->CCR |= DMA_CCR_EN;
 
 ---
 
-## ADC
+<h2 align=center>ADC</h2>
+
 | Functions | Description |
 | --------- | ----- |
 | void ADCInitMulti(Pin_t *pins, uint16_t count, uint8_t need_dma) | Initializes multiple ADC channels for a given array of pins. Includes optional DMA support for autonomous data collection from multiple sensors. |
@@ -239,7 +250,8 @@ while(1) {
 
 ---
 
-## SOFT UART
+<h2 align=center>SOFT UART</h2>
+
 | Functions | Description |
 | --------- | ----- |
 | uint16_t softUartAvailable(void) | Returns the number of received bytes currently stored in the software buffer. Non-blocking check. |
@@ -277,7 +289,8 @@ if (softUartAvailable()) {
 
 ---
 
-## SOFT I2C
+<h2 align=center>SOFT I2C</h2>
+
 | Functions | Description |
 | --------- | ----- |
 | void SoftI2C_Start(Pin_t sda, Pin_t scl) | Generates a START condition by pulling the SDA line low while SCL is high. Signals the beginning of a data transfer. |
