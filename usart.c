@@ -47,10 +47,10 @@ void usartWriteByte(USART_TypeDef *USARTx, char byte){
 }
 
 
-void usartWriteLine(USART_TypeDef *USARTx, const char* str){
+void usartWriteLine(USART_TypeDef *USARTx, const char* str, uint16_t len){
 	uint8_t port_id = usartIndex(USARTx);
 	volatile char *usartTXBuffer = usartTXBuffers[port_id];
-	while(*str != '\0'){
+	for(uint16_t i = 0; i < len; i++){
 		uint16_t next_head = (tx_heads[port_id] + 1) % USART_BUFFER_SIZE;
 		if(next_head == tx_tails[port_id]){
 			return;

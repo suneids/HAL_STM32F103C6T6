@@ -11,13 +11,13 @@ extern volatile uint16_t rx_tails[2], tx_tails[2];
 extern volatile char usartRXBuffers[2][USART_BUFFER_SIZE], usartTXBuffers[2][USART_BUFFER_SIZE];
 
 void echo(USART_TypeDef *USARTx);
-void usartInit(USART_TypeDef *USARTx, uint32_t);
+void usartInit(USART_TypeDef *USARTx, uint32_t baud_rate);
 uint16_t usartAvailable(USART_TypeDef *USARTx);
-void usartWriteByte(USART_TypeDef *USARTx, char);
-void usartWriteLine(USART_TypeDef *USARTx, const char*);
+void usartWriteByte(USART_TypeDef *USARTx, char byte);
+void usartWriteLine(USART_TypeDef *USARTx, const char *str, uint16_t len);
 
 char usartReadByte(USART_TypeDef *USARTx);
-void usartReadBytes(USART_TypeDef *USARTx, char *, uint32_t);
+void usartReadBytes(USART_TypeDef *USARTx, char *buf, uint32_t max_len);
 
 void USART_IRQHandler_Generic(USART_TypeDef *USARTx);
 

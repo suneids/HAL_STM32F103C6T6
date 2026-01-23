@@ -14,7 +14,7 @@ void enableGPIOClock(GPIO_TypeDef *port){
 }
 
 
-uint8_t gpioPortIndex(GPIO_TypeDef *port){ // @suppress("No return")
+uint8_t gpioPortIndex(GPIO_TypeDef *port){
 	if(port == GPIOA){
 		return 0;
 	}

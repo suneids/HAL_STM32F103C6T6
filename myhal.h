@@ -11,5 +11,5 @@
 #include "adc.h"
 #include "i2c.h"
 #include "soft_i2c.h"
-#include "soft_usart.h"
+#include "soft_uart.h"
 #endif

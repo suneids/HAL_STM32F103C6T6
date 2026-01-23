@@ -1,4 +1,4 @@
-#include "soft_usart.h"
+#include "soft_uart.h"
 #define SOFT_UART_TIM TIM3
 #define SOFT_UART_BITS_PER_FRAME 10 // 1 start + 8 data + 1 stop
 
