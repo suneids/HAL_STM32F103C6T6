@@ -1,16 +1,16 @@
 #include "../inc/gpio.h"
 
-void enableGPIOClock(GPIO_TypeDef *port){
-	if(port == GPIOA){
+static void enableGPIOClock(Pin_t pin){
+	if(pin.port == GPIOA){
 		RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
 	}
-	else if(port == GPIOB){
+	else if(pin.port == GPIOB){
 		RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
 	}
-	else if(port == GPIOC){
+	else if(pin.port == GPIOC){
 		RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
 	}
-	(void)port->CRL;
+	(void)pin.port->CRL;
 }
 
 
@@ -29,6 +29,7 @@ uint8_t gpioPortIndex(GPIO_TypeDef *port){
 
 
 void pinMode(Pin_t pin, uint8_t mode, uint8_t cnf, uint8_t pull){
+	enableGPIOClock(pin);
 	GPIO_TypeDef* GPIOx = pin.port;
 	uint8_t pin_number = pin.number;
 	uint8_t shift = 4*(pin_number < 8? pin_number: pin_number - 8);

@@ -7,7 +7,6 @@ volatile uint16_t rx_tails[2] = { 0 }, tx_tails[2] = { 0 };
 volatile char usartRXBuffers[2][USART_BUFFER_SIZE] = {{ 0 }}, usartTXBuffers[2][USART_BUFFER_SIZE] = {{ 0 }};
 
 void usartInit(USART_TypeDef *USARTx, uint32_t  baud_rate){
-	enableGPIOClock(GPIOA);
 	if(USARTx == USART1){
 		RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 		Pin_t tx = {GPIOA, 9}, rx = {GPIOA, 10};

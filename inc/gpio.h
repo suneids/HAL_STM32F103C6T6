@@ -27,7 +27,6 @@ typedef struct{
 } Pin_t;
 
 
-void enableGPIOClock(GPIO_TypeDef *port);
 uint8_t gpioPortIndex(GPIO_TypeDef *port);
 void pinMode(Pin_t pin, uint8_t mode, uint8_t cnf, uint8_t pull);
 void pinModeMulti(Pin_t* pins, size_t pins_number, uint8_t mode, uint8_t cnf, uint8_t pull);
