@@ -144,6 +144,13 @@ while(1) {
 | uint8_t I2C_ReadReg(I2C_TypeDef *I2Cx, uint8_t devAddr, uint8_t regAddr) | Reads a single byte from a target register. Manages the transition between Write (addressing) and Read modes. |
 | void I2C_Read_Burst(I2C_TypeDef *I2Cx, uint8_t devAddr, uint8_t regAddr, uint8_t *pBuffer, uint16_t size) | High-performance sequential read. Reads multiple bytes in a single transaction, essential for IMU sensor data. |
 
+## Hardware constraint (PB5 / I2C1_SMBA)
+> [!CAUTION]
+> PB5 is mapped to I2C1_SMBA (SMBus Alert).<br/>
+> When I2C1 is enabled (I2C_CR1.PE = 1), the peripheral takes control of this pin via Alternate Function.<br/>
+> As a result, TIM3_CH2 (PWM) or GPIO usage on PB5 will stop working.<br/>
+> Do not use PB5 for PWM if I2C1 is active.
+
 ## How to use
 > [!NOTE]
 >- **Addressing**: Note that the library expects a 7-bit address. You must shift it left by 1 bit (address << 1) before passing it to the functions, or ensure the library handles it internally.
