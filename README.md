@@ -7,17 +7,11 @@ Instruction for using modules:
 
 | Functions | Description |
 | --------- | ----- |
-| void enableGPIOClock(GPIO_TypeDef *port) | Enables clocking (RCC) for the specified port. It is necessary before any manipulation of pins. |
-| uint8_t gpioPortIndex(GPIO_TypeDef *port) | Returns the integer index of the port [0-2]. It is used for internal addressing and offsets in data arrays. |
 | void pinMode(Pin_t pin, uint8_t mode, uint8_t cnf, uint8_t pull) | Configures one pin. Adjusts the MODE and CNF bits in the CRL/CRH registers, including Pull-up/down control. |
 | void pinModeMulti(Pin_t* pins, size_t pins_number, uint8_t mode, uint8_t cnf, uint8_t pull) | Group initialization of an array of pins with the same parameters. Optimizes the code when configuring data buses |
 | void digitalWrite(Pin_t pin, uint8_t value) | Sets the output status (High/Low). Uses the BSRR register to atomically change the state of a bit. |
 | uint8_t digitalRead(Pin_t pin) | Returns the current logical state of the pin by reading the value from the input data register (IDR). |
 | void pinToggle(Pin_t pin) | Inverts the current state of the output pin. It is convenient for debugging and display (Heartbeat LED). |
-
-## How to use
-> [!NOTE]
->- **Clocking**: Always call enableGPIOClock() before any other pin configurations to power up the peripheral.
 
 ## Code example: GPIO
 ```C
