@@ -5,7 +5,7 @@
 static void softUartRxStartHandler(void);
 static void softUartTimDispatch(void);
 static void softUartStartTx(void);
-
+static uint32_t now = 0;
 typedef struct {
     uint8_t rx_byte;
     uint8_t bit_count;
@@ -52,23 +52,21 @@ static void softUartRxStartHandler(void){
     rx_state.bit_count = 0;
     rx_state.rx_byte = 0;
 
-//    SOFT_UART_TIM->CNT = rx_state.arr_value / 2;
-//    SOFT_UART_TIM->CR1 |= TIM_CR1_CEN;
+    uint32_t sample_time = SOFT_UART_TIM->CNT + (rx_state.arr_value * 3 / 2);
+
+    SOFT_UART_TIM->CCR1  = (uint16_t)(sample_time % (SOFT_UART_TIM->ARR + 1));
+
+    SOFT_UART_TIM->SR &= ~TIM_SR_CC1IF;
+    SOFT_UART_TIM->DIER |= TIM_DIER_CC1IE;
 }
 
 
 static void softUartRxTimHandler(void){
-    uint32_t port_idr = soft_uart_rx_pin.port->IDR;
-    uint8_t pin_mask = 1 << soft_uart_rx_pin.number;
-    uint8_t current_bit = 0;
-    
-    if(port_idr & pin_mask){
-        current_bit = 1;
-    }
+	uint8_t current_bit = (soft_uart_rx_pin.port->IDR & (1 << soft_uart_rx_pin.number)) ? 1 : 0;
 
     rx_state.bit_count++;
 
-    if(rx_state.bit_count >= 1 && rx_state.bit_count <=8){
+    if(rx_state.bit_count <=8){
         uint8_t shift_amount = rx_state.bit_count - 1;
         uint8_t bit_mask = (1 << shift_amount);
         if(current_bit){
@@ -77,21 +75,20 @@ static void softUartRxTimHandler(void){
         else{
             rx_state.rx_byte &= ~bit_mask;
         }
+        uint32_t next_sample = SOFT_UART_TIM->CCR1 + rx_state.arr_value;
+        SOFT_UART_TIM->CCR1 = (uint16_t)(next_sample %(SOFT_UART_TIM->ARR + 1));
     }
-    else if(rx_state.bit_count == 9){
-        if(current_bit == 0){
-            //TODO Обработка ошибки
-        }
-    }
-    else if(rx_state.bit_count == 10){
-
-//        SOFT_UART_TIM->CR1 &= ~TIM_CR1_CEN;
+    else{
+    	SOFT_UART_TIM->DIER &= ~TIM_DIER_CC1IE;
+    	if(current_bit == 1){
+    		uint16_t next_head = (rx_head + 1) & SOFT_UART_BUFFER_MASK;
+    		if(next_head != rx_tail){
+                soft_uart_rx_buffer[rx_head] = rx_state.rx_byte;
+                rx_head = next_head;
+    		}
+    	}
+    	EXTI->PR = (1 << soft_uart_rx_pin.number);
         EXTI->IMR |= (1 << soft_uart_rx_pin.number);
-        uint16_t next_head = (rx_head + 1) & SOFT_UART_BUFFER_MASK;
-        if(next_head != rx_tail){
-            soft_uart_rx_buffer[rx_head] = rx_state.rx_byte;
-            rx_head = next_head;
-        }
         rx_state.bit_count = 0;
     }
 }
@@ -141,9 +138,6 @@ static void softUartStartTx(void){
 
     tx_state.bit_count = 0;
     tx_state.tx_busy = 1;
-
-//    SOFT_UART_TIM->CNT = 0;
-//    SOFT_UART_TIM-> CR1 |= TIM_CR1_CEN;
 }
 
 
@@ -171,10 +165,13 @@ void softUartPutString(const char *data){
 
 
 static void softUartTimDispatch(void){
-    if((EXTI->IMR & (1 << soft_uart_rx_pin.number)) == 0){
-        softUartRxTimHandler();
+    if(SOFT_UART_TIM->SR & TIM_SR_CC1IF){
+    	SOFT_UART_TIM->SR &= ~TIM_SR_CC1IF;
+    	if((EXTI->IMR & (1 << soft_uart_rx_pin.number)) == 0){
+    		softUartRxTimHandler();
+    	}
     }
-    else if(tx_state.tx_busy){
+    if(tx_state.tx_busy){
         softUartTxTimHandler();
     }
     else if(tx_head != tx_tail){
