@@ -61,43 +61,44 @@ static void extiGroupDispatch(uint8_t start_number, uint8_t end_number){
 	}
 }
 
-__attribute__((weak)) void EXTI0_IRQHandler(void){
+
+void EXTI0_IRQHandler(void){
 	extiGroupDispatch(0, 0);
 	if(EXTI0_User_Handler) EXTI0_User_Handler();
 }
 
 
-__attribute__((weak)) void EXTI1_IRQHandler(void){
+void EXTI1_IRQHandler(void){
 	extiGroupDispatch(1, 1);
 	if(EXTI1_User_Handler) EXTI1_User_Handler();
 }
 
 
-__attribute__((weak)) void EXTI2_IRQHandler(void){
+void EXTI2_IRQHandler(void){
 	extiGroupDispatch(2, 2);
 	if(EXTI2_User_Handler) EXTI2_User_Handler();
 }
 
 
-__attribute__((weak)) void EXTI3_IRQHandler(void){
+void EXTI3_IRQHandler(void){
 	extiGroupDispatch(3, 3);
 	if(EXTI3_User_Handler) EXTI3_User_Handler();
 }
 
 
-__attribute__((weak)) void EXTI4_IRQHandler(void){
+ void EXTI4_IRQHandler(void){
 	extiGroupDispatch(4, 4);
 	if(EXTI4_User_Handler) EXTI4_User_Handler();
 }
 
 
-__attribute__((weak)) void EXTI9_5_IRQHandler(void){
+void EXTI9_5_IRQHandler(void){
 	extiGroupDispatch(5, 9);
 	if(EXTI9_5_User_Handler) EXTI9_5_User_Handler();
 }
 
 
-__attribute__((weak)) void EXTI15_10_IRQHandler(void){
+void EXTI15_10_IRQHandler(void){
 	extiGroupDispatch(10, 15);
 	if(EXTI15_10_User_Handler) EXTI15_10_User_Handler();
 }

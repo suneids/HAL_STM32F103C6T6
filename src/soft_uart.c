@@ -5,7 +5,7 @@
 static void softUartRxStartHandler(void);
 static void softUartTimDispatch(void);
 static void softUartStartTx(void);
-static uint32_t now = 0;
+
 typedef struct {
     uint8_t rx_byte;
     uint8_t bit_count;

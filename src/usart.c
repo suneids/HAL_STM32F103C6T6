@@ -11,7 +11,7 @@ void usartInit(USART_TypeDef *USARTx, uint32_t  baud_rate){
 		RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 		Pin_t tx = {GPIOA, 9}, rx = {GPIOA, 10};
 		pinMode(tx, GPIO_MODE_OUTPUT_50MHz, GPIO_CNF_PUSH_PULL_ALT, 0);
-		pinMode(rx, GPIO_MODE_INPUT, GPIO_CNF_FLOATING, 0);
+		pinMode(rx, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PU_PD, 1);
 		NVIC_EnableIRQ(USART1_IRQn);
 	}
 	else if(USARTx == USART2){
