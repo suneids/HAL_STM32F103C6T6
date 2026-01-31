@@ -42,7 +42,7 @@ void pinMode(Pin_t pin, uint8_t mode, uint8_t cnf, uint8_t pull){
 		GPIOx->CRH |= ((cnf << 2) | mode) << shift;
 	}
 	if(mode == GPIO_MODE_INPUT && cnf == GPIO_CNF_INPUT_PU_PD){
-		if(pull){
+		if(pull == GPIO_PULL){
 			GPIOx->ODR |= 1 << pin_number;
 		}
 		else{
