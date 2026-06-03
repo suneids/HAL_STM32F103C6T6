@@ -2,7 +2,7 @@
 #include "../../../inc/usart.h"
 #include "../../../inc/gpio.h"
 #include "../../../inc/tim.h"
-#if defined(STM32F103)
+#if defined(STM32F103C6Tx)
 
 static void USART_RXHandler_Default(UART_HandleTypeDef* huart, uint8_t byte);
 static void USART_TXHandler_Default(UART_HandleTypeDef* huart);
@@ -17,16 +17,18 @@ static UART_HandleTypeDef huart2 = {USART2, NULL, USART_RXHandler_Default, USART
 void USART_Init(USART_TypeDef *USARTx, uint32_t  baud_rate, uint8_t parity, uint8_t stop_bits){
 	if(USARTx == USART1){
 		RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
-		Pin_t tx = {GPIOA, 9}, rx = {GPIOA, 10};
-		GPIO_PinMode(tx, GPIO_MODE_OUTPUT_50MHz, GPIO_CNF_PUSH_PULL_ALT, 0);
-		GPIO_PinMode(rx, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PU_PD, 1);
+		GPIO_Pin_t tx = {.port = GPIOA, .number = 9,  .mode = GPIO_MODE_OUTPUT_50MHz, .cnf = GPIO_CNF_PUSH_PULL_ALT, .pull = GPIO_PULL_NONE},
+				   rx = {.port = GPIOA, .number = 10, .mode = GPIO_MODE_INPUT, .cnf = GPIO_CNF_INPUT_PU_PD, .pull = GPIO_PULL};
+		GPIO_PinMode(tx);
+		GPIO_PinMode(rx);
 		NVIC_EnableIRQ(USART1_IRQn);
 	}
 	else if(USARTx == USART2){
 		RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
-		Pin_t tx = {GPIOA, 2}, rx = {GPIOA, 3};
-		GPIO_PinMode(tx, GPIO_MODE_OUTPUT_50MHz, GPIO_CNF_PUSH_PULL_ALT, 0);
-		GPIO_PinMode(rx, GPIO_MODE_INPUT, GPIO_CNF_FLOATING, 0);
+		GPIO_Pin_t tx = {.port = GPIOA, .number = 2,  .mode = GPIO_MODE_OUTPUT_50MHz, .cnf = GPIO_CNF_PUSH_PULL_ALT, .pull = GPIO_PULL_NONE},
+			       rx = {.port = GPIOA, .number = 3, .mode = GPIO_MODE_INPUT, .cnf = GPIO_CNF_FLOATING, .pull = GPIO_PULL_NONE};
+		GPIO_PinMode(tx);
+		GPIO_PinMode(rx);
 		NVIC_EnableIRQ(USART2_IRQn);
 	}
 	USARTx->CR1 &= ~(USART_CR1_UE | USART_CR1_RXNEIE | USART_CR1_PCE | USART_CR1_PS | USART_CR1_M);

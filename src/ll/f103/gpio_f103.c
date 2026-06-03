@@ -1,8 +1,8 @@
 #include "../../../inc/gpio.h"
-#if defined(STM32F103)
+#if defined(STM32F103C6Tx)
 
 
-static void GPIO_ClockEnable(Pin_t pin){
+static void GPIO_ClockEnable(GPIO_Pin_t pin){
 	if(pin.port == GPIOA){
 		RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
 	}
@@ -30,21 +30,21 @@ uint8_t GPIO_GetPortIndex(GPIO_TypeDef *port){
 }
 
 
-void GPIO_PinMode(GPIO_Pin_t pin, uint8_t mode, uint8_t cnf, uint8_t pull){
+void GPIO_PinMode(GPIO_Pin_t pin){
 	GPIO_ClockEnable(pin);
 	GPIO_TypeDef* GPIOx = pin.port;
 	uint8_t pin_number = pin.number;
 	uint8_t shift = 4*(pin_number < 8? pin_number: pin_number - 8);
 	if(pin_number < 8){
 		GPIOx->CRL &= ~( 0xFUL << shift);
-		GPIOx->CRL |= ((cnf << 2) | mode) << shift;
+		GPIOx->CRL |= ((pin.cnf << 2) | pin.mode) << shift;
 	}
 	else{
 		GPIOx->CRH &= ~( 0xFUL << shift);
-		GPIOx->CRH |= ((cnf << 2) | mode) << shift;
+		GPIOx->CRH |= ((pin.cnf << 2) | pin.mode) << shift;
 	}
-	if(mode == GPIO_MODE_INPUT && cnf == GPIO_CNF_INPUT_PU_PD){
-		if(pull){
+	if(pin.mode == GPIO_MODE_INPUT && pin.cnf == GPIO_CNF_INPUT_PU_PD){
+		if(pin.pull){
 			GPIOx->ODR |= 1 << pin_number;
 		}
 		else{
@@ -55,13 +55,13 @@ void GPIO_PinMode(GPIO_Pin_t pin, uint8_t mode, uint8_t cnf, uint8_t pull){
 
 
 
-void GPIO_PinModeMulti(Pin_t *pins, size_t pins_number, uint8_t mode, uint8_t cnf, uint8_t pull){
+void GPIO_PinModeMulti(const GPIO_Pin_t *pins, size_t pins_number){
 	for(uint8_t i = 0; i < pins_number; i++)
-		GPIO_PinMode(pins[i], mode, cnf, pull);
+		GPIO_PinMode(pins[i]);
 }
 
 
-void GPIO_PinToggle(Pin_t pin){
+void GPIO_PinToggle(GPIO_Pin_t pin){
 	GPIO_TypeDef *GPIOx = pin.port;
 	uint8_t pin_number = pin.number;
 	if(GPIOx->ODR & (1U << pin_number)){
@@ -73,7 +73,7 @@ void GPIO_PinToggle(Pin_t pin){
 }
 
 
-void GPIO_DigitalWrite(Pin_t pin, uint8_t value){
+void GPIO_DigitalWrite(GPIO_Pin_t pin, uint8_t value){
 	GPIO_TypeDef* GPIOx = pin.port;
 	uint8_t pin_number = pin.number;
 	if(value == 1){
@@ -85,7 +85,7 @@ void GPIO_DigitalWrite(Pin_t pin, uint8_t value){
 }
 
 
-uint8_t GPIO_DigitalRead(Pin_t pin){
+uint8_t GPIO_DigitalRead(GPIO_Pin_t pin){
 	GPIO_TypeDef* GPIOx = pin.port;
 	uint8_t pin_number = pin.number;
 	return (GPIOx->IDR & (1 << pin_number))? 1 : 0;

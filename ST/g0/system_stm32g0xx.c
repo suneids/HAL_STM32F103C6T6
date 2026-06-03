@@ -74,7 +74,7 @@
   * @{
   */
 
-
+#if defined(STM32G0B1CBTx)
 #include <stdint.h>
 #include "../../inc/mcu_config.h"
 #if !defined  (HSE_VALUE)
@@ -303,3 +303,4 @@ void SystemCoreClockUpdate(void)
 /**
   * @}
   */
+#endif

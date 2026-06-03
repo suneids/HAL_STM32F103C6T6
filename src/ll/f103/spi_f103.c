@@ -1,7 +1,7 @@
 #include "../../../inc/spi.h"
 #include "../../../inc/tim.h"
 #include "../../../inc/dma.h"
-#if defined(STM32F103)
+#if defined(STM32F103C6Tx)
 
 static SPI_Status_t enableSPIClock(void *instance){
 	if(instance == SPI1){
@@ -33,7 +33,7 @@ static inline uint32_t SPI_F103_BR_Bits(SPI_BaudDiv_t div){
 }
 
 
-SPI_Status_t SPI_Init(SPI_Handle_t *h, const SPI_Config_t *cfg){
+SPI_Status_t SPI_Init(SPI_Handle_t *h, SPI_Config_t *cfg){
 	if(!h || !cfg || !cfg->instance){
 		return SPI_ERR_PARAM;
 	}
@@ -45,11 +45,22 @@ SPI_Status_t SPI_Init(SPI_Handle_t *h, const SPI_Config_t *cfg){
 	if(st != SPI_OK) return st;
 
 	SPI_TypeDef *SPIx = (SPI_TypeDef*)cfg->instance;
+	cfg->sck.mode = GPIO_MODE_OUTPUT_50MHz;
+	cfg->sck.cnf  = GPIO_CNF_PUSH_PULL_ALT;
+	cfg->sck.pull = GPIO_PULL_NONE;
 
-	GPIO_PinMode(cfg->sck, GPIO_MODE_OUTPUT_50MHz, GPIO_CNF_PUSH_PULL_ALT, GPIO_PULL_NONE);
-	GPIO_PinMode(cfg->mosi, GPIO_MODE_OUTPUT_50MHz, GPIO_CNF_PUSH_PULL_ALT, GPIO_PULL_NONE);
+	cfg->mosi.mode = GPIO_MODE_OUTPUT_50MHz;
+	cfg->mosi.cnf  = GPIO_CNF_PUSH_PULL_ALT;
+	cfg->mosi.pull = GPIO_PULL_NONE;
 
-	GPIO_PinMode(cfg->miso, GPIO_MODE_INPUT, GPIO_CNF_FLOATING, GPIO_PULL_NONE);
+	cfg->miso.mode = GPIO_MODE_INPUT;
+	cfg->miso.cnf  = GPIO_CNF_FLOATING;
+	cfg->miso.pull = GPIO_PULL_NONE;
+
+	GPIO_PinMode(cfg->sck);
+	GPIO_PinMode(cfg->mosi);
+
+	GPIO_PinMode(cfg->miso);
 
 	uint32_t br = SPI_F103_BR_Bits(cfg->baud_div);
 	if(br == 0xFFFFFFFFu) return SPI_ERR_PARAM;
@@ -155,14 +166,18 @@ static inline void SPI_CS(SPI_Device_t *dev, bool active){
 }
 
 
-SPI_Status_t SPI_DeviceInit(SPI_Device_t *dev, SPI_Handle_t *bus, Pin_t cs, bool cs_active_low){
+SPI_Status_t SPI_DeviceInit(SPI_Device_t *dev, SPI_Handle_t *bus, GPIO_Pin_t cs, bool cs_active_low){
 	if(!dev || !bus || !bus->instance) return SPI_ERR_PARAM;
+
+	cs.mode = GPIO_MODE_OUTPUT_50MHz;
+	cs.cnf  = GPIO_CNF_PUSH_PULL;
+	cs.pull = GPIO_PULL_NONE;
 
 	dev->bus = bus;
 	dev->cs = cs;
 	dev->cs_active_low = cs_active_low;
 
-	GPIO_PinMode(cs, GPIO_MODE_OUTPUT_50MHz, GPIO_CNF_PUSH_PULL, GPIO_PULL_NONE);
+	GPIO_PinMode(cs);
 
 	SPI_CS(dev, false);
 	return SPI_OK;

@@ -1,5 +1,5 @@
 #include "../../../inc/pwm.h"
-#if defined(STM32F103)
+#if defined(STM32F103C6Tx)
 
 #define PWM_MAP_SIZE 12
 const uint32_t CCMR_OCxM[4] = { TIM_CCMR1_OC1M, TIM_CCMR1_OC2M,
@@ -31,8 +31,12 @@ PinMap_t map[PWM_MAP_SIZE] = {
 };
 
 
-void PWM_Init(Pin_t pin){
-	GPIO_PinMode(pin, GPIO_MODE_OUTPUT_10MHz, GPIO_CNF_PUSH_PULL_ALT, GPIO_PULL_NONE);
+void PWM_Init(GPIO_Pin_t pin){
+	pin.mode = GPIO_MODE_OUTPUT_10MHz;
+	pin.cnf  = GPIO_CNF_PUSH_PULL_ALT;
+	pin.pull = GPIO_PULL_NONE;
+
+	GPIO_PinMode(pin);
 	TimerChannel_t pin_metadata = TIM_GetChannel(pin);
 	if(pin_metadata.TIMx == NULL) return;
 
@@ -66,7 +70,7 @@ void PWM_Init(Pin_t pin){
 }
 
 
-void PWM_Write(Pin_t pin, uint16_t value){
+void PWM_Write(GPIO_Pin_t pin, uint16_t value){
 	TimerChannel_t pin_metadata = TIM_GetChannel(pin);
 	TIM_TypeDef *TIMx = pin_metadata.TIMx;
 	uint8_t channel = pin_metadata.channel;
@@ -77,7 +81,7 @@ void PWM_Write(Pin_t pin, uint16_t value){
 
 }
 
-TimerChannel_t TIM_GetChannel(Pin_t pin){
+TimerChannel_t TIM_GetChannel(GPIO_Pin_t pin){
 	TimerChannel_t result = {NULL, 0};
 	for(int i = 0; i < PWM_MAP_SIZE; i++){
 		if((map[i].pin.port == pin.port) && ( map[i].pin.number == pin.number)){

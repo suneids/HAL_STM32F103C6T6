@@ -1,5 +1,5 @@
 #include "../../../inc/flash_ll.h"
-#if defined(STM32F103)
+#if defined(STM32F103C6Tx)
 
 static int flash_wait_ready(){
 	// Wait for BSY reset

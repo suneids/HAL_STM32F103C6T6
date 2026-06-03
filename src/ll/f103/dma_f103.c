@@ -1,5 +1,5 @@
 #include "../../../inc/dma.h"
-#if defined(STM32F103)
+#if defined(STM32F103C6Tx)
 
 void DMA_Init(DMA_Channel_TypeDef *DMAx, uint32_t peripheral_addr, uint32_t memory_addr, uint16_t data_count){
 	RCC->AHBENR |= RCC_AHBENR_DMA1EN;

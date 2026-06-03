@@ -3,7 +3,7 @@
 #include "mcu_config.h"
 #include <stddef.h>
 
-#if defined(STM32F103)
+#if defined(STM32F103C6Tx)
 	#define GPIO_MODE_INPUT 0b00
 	#define GPIO_MODE_OUTPUT_10MHz 0b01
 	#define GPIO_MODE_OUTPUT_2MHz 0b10
@@ -44,7 +44,7 @@
 typedef struct{
 	GPIO_TypeDef *port;
 	uint8_t number;
-	#if defined(STM32F103)
+	#if defined(STM32F103C6Tx)
 	uint8_t mode;
 	uint8_t cnf;
 	uint8_t pull;

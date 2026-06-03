@@ -69,7 +69,7 @@ typedef struct{
 }SPI_Device_t;
 
 
-SPI_Status_t SPI_Init(SPI_Handle_t *h, const SPI_Config_t *cfg);
+SPI_Status_t SPI_Init(SPI_Handle_t *h, SPI_Config_t *cfg);
 
 SPI_Status_t SPI_SetBaud(SPI_Handle_t *h, SPI_BaudDiv_t baud_div);
 SPI_Status_t SPI_SetMode(SPI_Handle_t *h, SPI_Mode_t mode);

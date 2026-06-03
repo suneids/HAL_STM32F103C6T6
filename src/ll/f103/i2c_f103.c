@@ -1,8 +1,14 @@
 #include "../../../inc/i2c.h"
-#if defined(STM32F103)
+#if defined(STM32F103C6Tx)
 
-void I2C_Init(I2C_TypeDef *I2Cx, Pin_t SDA, Pin_t SCL){
-	GPIO_PinMode(SCL, GPIO_MODE_OUTPUT_10MHz, GPIO_CNF_PUSH_PULL, 0);
+void I2C_Init(I2C_TypeDef *I2Cx, GPIO_Pin_t SDA, GPIO_Pin_t SCL){
+	if (I2Cx == I2C1) RCC->APB1ENR |= RCC_APB1ENR_I2C1EN;
+//	else if (I2Cx == I2C2) RCC->APB1ENR |= RCC_APB1ENR_I2C2EN;
+
+	SCL.mode = GPIO_MODE_OUTPUT_10MHz;
+	SCL.cnf  = GPIO_CNF_PUSH_PULL;
+	SCL.pull = GPIO_PULL_NONE;
+	GPIO_PinMode(SCL);
 
 	// Генерируем 9 тактов, чтобы датчик "выплюнул" застрявший бит
 	// TODO сделать универсальнее на основе переданных SDA SCL
@@ -12,9 +18,16 @@ void I2C_Init(I2C_TypeDef *I2Cx, Pin_t SDA, Pin_t SCL){
 		GPIOB->BSRR = GPIO_BSRR_BS6;  // SCL в 1
 		for(volatile int d = 0; d < 500; d++);
 	}
+	SCL.mode = GPIO_MODE_OUTPUT_2MHz;
+	SCL.cnf  = GPIO_CNF_OPEN_DRAIN_ALT;
+	SCL.pull = GPIO_PULL_NONE;
 
-	GPIO_PinMode(SDA, GPIO_MODE_OUTPUT_2MHz, GPIO_CNF_OPEN_DRAIN_ALT, 0);
-	GPIO_PinMode(SCL, GPIO_MODE_OUTPUT_2MHz, GPIO_CNF_OPEN_DRAIN_ALT, 0);
+	SDA.mode = GPIO_MODE_OUTPUT_2MHz;
+	SDA.cnf  = GPIO_CNF_OPEN_DRAIN_ALT;
+	SDA.pull = GPIO_PULL_NONE;
+
+	GPIO_PinMode(SDA);
+	GPIO_PinMode(SCL);
 
 	I2Cx->CR1 |= I2C_CR1_SWRST;
 	for(volatile int i = 0; i < 1000; i++);
@@ -60,13 +73,14 @@ void I2C_WriteReg(I2C_TypeDef *I2Cx, uint8_t devAddr, uint8_t regAddr, uint8_t d
 
 
 
-void I2C_WriteByteArray(I2C_TypeDef *I2Cx, uint8_t devAddr, uint8_t regAddr, uint8_t *pData, uint16_t len){
+uint8_t I2C_WriteByteArray(I2C_TypeDef *I2Cx, uint8_t devAddr, uint8_t regAddr, uint8_t *pData, uint16_t len){
 	I2C_Send_Address_And_Reg(I2Cx, devAddr, regAddr);
 	for(uint16_t i = 0; i < len; i++){
 		I2C_WriteByte(I2Cx, pData[i]);
 	}
 
 	I2Cx->CR1 |= I2C_CR1_STOP;
+	return 1;
 }
 
 
@@ -78,7 +92,7 @@ uint8_t I2C_ReadReg(I2C_TypeDef *I2Cx, uint8_t devAddr, uint8_t regAddr){
 }
 
 
-void I2C_Read_Burst(I2C_TypeDef *I2Cx, uint8_t devAddr, uint8_t regAddr, uint8_t *pBuffer, uint16_t size){
+uint8_t I2C_Read_Burst(I2C_TypeDef *I2Cx, uint8_t devAddr, uint8_t regAddr, uint8_t *pBuffer, uint16_t size){
 	while(I2Cx->SR2 & I2C_SR2_BUSY);
 
 	I2C_Send_Address_And_Reg(I2Cx, devAddr, regAddr);
@@ -106,6 +120,6 @@ void I2C_Read_Burst(I2C_TypeDef *I2Cx, uint8_t devAddr, uint8_t regAddr, uint8_t
 		while(!(I2Cx->SR1 & I2C_SR1_RXNE));
 		pBuffer[i] = I2Cx->DR;
 	}
-
+	return 1;
 }
 #endif

@@ -1,10 +1,10 @@
 #include "../../../inc/exti.h"
-#if defined(STM32F103)
+#if defined(STM32F103C6Tx)
 
 static ExtiHandler_t exti_handlers[16] = {NULL};
 
 
-void extiInit(Pin_t pin, ExtiEdge edge){
+void extiInit(GPIO_Pin_t pin, ExtiEdge edge){
 	GPIO_TypeDef *GPIOx = pin.port;
 	uint8_t pin_number = pin.number;
 	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;
@@ -37,14 +37,14 @@ void extiInit(Pin_t pin, ExtiEdge edge){
 }
 
 
-void extiClearFlag(Pin_t pin){
+void extiClearFlag(GPIO_Pin_t pin){
 	uint8_t pin_number = pin.number;
 	EXTI->PR |= (1 << pin_number);
 }
 
 // HANDLER
 
-void extiRegisterHandler(Pin_t pin, ExtiHandler_t handler){
+void extiRegisterHandler(GPIO_Pin_t pin, ExtiHandler_t handler){
 	uint8_t pin_number = pin.number;
 	if(pin_number < 16){
 		exti_handlers[pin_number] = handler;

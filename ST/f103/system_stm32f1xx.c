@@ -72,8 +72,8 @@
 /** @addtogroup STM32F1xx_System_Private_Defines
   * @{
   */
-#if defined(STM32F103x6)
-
+#if defined(STM32F103C6Tx)
+#include "../../inc/mcu_config.h"
 
 
 #if !defined  (HSE_VALUE) 

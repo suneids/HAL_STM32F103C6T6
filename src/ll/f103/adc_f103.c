@@ -1,16 +1,20 @@
 #include "../../../inc/adc.h"
 
-#if defined(STM32F103)
-uint8_t getChannelNumber(Pin_t pin){
+#if defined(STM32F103C6Tx)
+uint8_t getChannelNumber(GPIO_Pin_t pin){
 	if(pin.port == GPIOA) return pin.number;
 	if(pin.port == GPIOB) return pin.number + 8;
 	if(pin.port == GPIOC) return pin.number + 10;
 	return 0xFF;
 }
 
-void ADC_InitMulti(Pin_t *pins, uint16_t count, uint8_t need_dma){
-	for(uint16_t i = 0; i < count; i++)
-		GPIO_PinMode(pins[i], GPIO_MODE_INPUT, GPIO_CNF_ANALOG, GPIO_PULL_NONE);
+void ADC_InitMulti(GPIO_Pin_t *pins, uint16_t count, uint8_t need_dma){
+	for(uint16_t i = 0; i < count; i++){
+		pins[i].mode = GPIO_MODE_INPUT;
+		pins[i].cnf = GPIO_CNF_ANALOG;
+		pins[i].pull = GPIO_PULL_NONE;
+		GPIO_PinMode(pins[i]);
+	}
 
 	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
 	(void)ADC1->SR;

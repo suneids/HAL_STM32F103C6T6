@@ -1,5 +1,5 @@
 #include "../../../inc/tim.h"
-#if defined(STM32F103)
+#if defined(STM32F103C6Tx)
 
 volatile uint32_t msTicks = 0;
 static TimHandler_t tim_handlers[3] = {NULL, NULL, NULL};
@@ -53,12 +53,14 @@ void TIM_Init(TIM_TypeDef *TIMx, uint32_t psc, uint32_t arr, uint8_t debounce){
 	TIMx->PSC = psc;
 	TIMx->ARR = arr;
 	TIMx->CNT = 0;
-	TIMx->DIER |= TIM_DIER_UIE;
+
 
 	if(debounce){
+		TIMx->DIER |= TIM_DIER_UIE;
 		TIMx->CR1 &= ~TIM_CR1_CEN;
 	}
 	else{
+		TIMx->DIER &= ~TIM_DIER_UIE;
 		TIMx->CR1 |= TIM_CR1_ARPE;
 		TIMx->EGR |= TIM_EGR_UG;
 		TIMx->CR1 |= TIM_CR1_CEN;
@@ -163,4 +165,52 @@ uint32_t RCC_GetPclk2_Hz(void)
     return hclk / apb_presc_tbl[ppre2];
 }
 
+static TIM_TypeDef *us_tim = 0;
+
+void TIM_US_Init(TIM_TypeDef *TIMx)
+{
+    us_tim = TIMx;
+
+#if defined(STM32F103C6Tx)
+    if (TIMx == TIM2) {
+        RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+    }
+    else if (TIMx == TIM3) {
+        RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
+    }
+//    else if (TIMx == TIM4) {
+//        RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
+//    }
+
+    uint32_t tim_clk = RCC_GetTIMPclk1_Hz();
+
+#elif defined(STM32G0B1xx)
+    if (TIMx == TIM2) {
+        RCC->APBENR1 |= RCC_APBENR1_TIM2EN;
+    } else if (TIMx == TIM3) {
+        RCC->APBENR1 |= RCC_APBENR1_TIM3EN;
+    }
+
+    uint32_t tim_clk = RCC_GetTIMPclk1_Hz();
+#endif
+
+    /*
+     * Делаем таймер 1 MHz:
+     * 1 тик = 1 us
+     */
+    TIMx->PSC = (tim_clk / 1000000UL) - 1;
+    TIMx->ARR = 0xFFFF;
+    TIMx->CNT = 0;
+
+    TIMx->CR1 |= TIM_CR1_CEN;
+}
+
+void delay_us(uint32_t us)
+{
+    uint16_t start = us_tim->CNT;
+
+    while ((uint16_t)(us_tim->CNT - start) < us) {
+        // wait
+    }
+}
 #endif
