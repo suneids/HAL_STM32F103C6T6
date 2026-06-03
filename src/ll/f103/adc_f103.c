@@ -1,4 +1,6 @@
-#include "../inc/adc.h"
+#include "../../../inc/adc.h"
+
+#if defined(STM32F103)
 uint8_t getChannelNumber(Pin_t pin){
 	if(pin.port == GPIOA) return pin.number;
 	if(pin.port == GPIOB) return pin.number + 8;
@@ -6,7 +8,10 @@ uint8_t getChannelNumber(Pin_t pin){
 	return 0xFF;
 }
 
-void ADCInitMulti(Pin_t *pins, uint16_t count, uint8_t need_dma){
+void ADC_InitMulti(Pin_t *pins, uint16_t count, uint8_t need_dma){
+	for(uint16_t i = 0; i < count; i++)
+		GPIO_PinMode(pins[i], GPIO_MODE_INPUT, GPIO_CNF_ANALOG, GPIO_PULL_NONE);
+
 	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
 	(void)ADC1->SR;
 	RCC->CFGR &= ~(RCC_CFGR_ADCPRE_Msk);
@@ -28,6 +33,7 @@ void ADCInitMulti(Pin_t *pins, uint16_t count, uint8_t need_dma){
 	ADC1->SMPR2 |= 0xFFFFFFFF;
 	ADC1->SMPR1 |= 0xFFFFFFFF;
 	ADC1->CR1 |= ADC_CR1_SCAN;
+	// Force ADC power-cycle before calibration
 	ADC1->CR2 |= ADC_CR2_CONT | ADC_CR2_ADON;
 	ADC1->CR2 &= ~ADC_CR2_ADON;
 	for (volatile int i = 0; i < 100; i++);
@@ -46,5 +52,10 @@ void ADCInitMulti(Pin_t *pins, uint16_t count, uint8_t need_dma){
 	else{
 		ADC1->CR2 &= ~ADC_CR2_DMA;
 	}
+}
+
+void ADC_Start(){
 	ADC1->CR2 |= ADC_CR2_SWSTART;
 }
+
+#endif

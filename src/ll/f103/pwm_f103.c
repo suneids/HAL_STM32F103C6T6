@@ -1,4 +1,7 @@
-#include "../inc/pwm.h"
+#include "../../../inc/pwm.h"
+#if defined(STM32F103)
+
+#define PWM_MAP_SIZE 12
 const uint32_t CCMR_OCxM[4] = { TIM_CCMR1_OC1M, TIM_CCMR1_OC2M,
 						 TIM_CCMR2_OC3M, TIM_CCMR2_OC4M };
 const uint32_t CCMR_OCxPos[4] = { TIM_CCMR1_OC1M_Pos, TIM_CCMR1_OC2M_Pos,
@@ -9,7 +12,7 @@ const uint32_t CCER_CCxE[4] = {TIM_CCER_CC1E, TIM_CCER_CC2E,
 						 TIM_CCER_CC3E, TIM_CCER_CC4E };
 
 
-PinMap_t map[13] = {
+PinMap_t map[PWM_MAP_SIZE] = {
     {{GPIOA, 8}, TIM1, 1},
     {{GPIOA, 9}, TIM1, 2},
     {{GPIOA, 10}, TIM1, 3},
@@ -28,11 +31,14 @@ PinMap_t map[13] = {
 };
 
 
-void pwmInit(Pin_t pin){
-	TimerChannel_t pin_metadata = getTIMChannel(pin);
+void PWM_Init(Pin_t pin){
+	GPIO_PinMode(pin, GPIO_MODE_OUTPUT_10MHz, GPIO_CNF_PUSH_PULL_ALT, GPIO_PULL_NONE);
+	TimerChannel_t pin_metadata = TIM_GetChannel(pin);
 	if(pin_metadata.TIMx == NULL) return;
 
 	TIM_TypeDef *TIMx = pin_metadata.TIMx;
+
+
 	uint8_t channel = pin_metadata.channel;
 	if((channel < 1) || (channel > 4)){
 		//TODO assert error
@@ -54,22 +60,26 @@ void pwmInit(Pin_t pin){
 //	*CCMRx |= (6 << CCMR_OCxPos[channel]);
 	*CCMRx |= (CCMR_OCxPE[channel]);
 	TIMx->CCER |= (CCER_CCxE[channel]);
+
+	if(TIMx == TIM1) TIM1->BDTR |= TIM_BDTR_MOE;
+	TIMx->EGR |= TIM_EGR_UG;
 }
 
 
-void pwmWrite(Pin_t pin, uint16_t value){
-	TimerChannel_t pin_metadata = getTIMChannel(pin); 
+void PWM_Write(Pin_t pin, uint16_t value){
+	TimerChannel_t pin_metadata = TIM_GetChannel(pin);
 	TIM_TypeDef *TIMx = pin_metadata.TIMx;
 	uint8_t channel = pin_metadata.channel;
 	__IO uint32_t *CCRs[4] = {&TIMx->CCR1, &TIMx->CCR2, &TIMx->CCR3, &TIMx->CCR4};
 	if((channel > 0) && (channel < 5) && (value <= TIMx->ARR)){
 		*CCRs[channel - 1] = value;
 	}
+
 }
 
-TimerChannel_t getTIMChannel(Pin_t pin){
+TimerChannel_t TIM_GetChannel(Pin_t pin){
 	TimerChannel_t result = {NULL, 0};
-	for(int i = 0; i < 13; i++){
+	for(int i = 0; i < PWM_MAP_SIZE; i++){
 		if((map[i].pin.port == pin.port) && ( map[i].pin.number == pin.number)){
 			result.TIMx = map[i].TIMx; 
 			result.channel = map[i].channel;
@@ -79,3 +89,4 @@ TimerChannel_t getTIMChannel(Pin_t pin){
 
 	return result;
 }
+#endif

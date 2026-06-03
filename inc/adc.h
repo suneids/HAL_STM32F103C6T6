@@ -4,6 +4,6 @@
 #define DMA_DISABLE 0
 #include "gpio.h"
 
-void ADCInitMulti(Pin_t *pins, uint16_t count, uint8_t need_dma);
-
+void ADC_InitMulti(GPIO_Pin_t *pins, uint16_t count, uint8_t need_dma);
+void ADC_Start();
 #endif

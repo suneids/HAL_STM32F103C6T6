@@ -9,10 +9,10 @@ typedef enum{
 } ExtiEdge;
 
 typedef void (*ExtiHandler_t)(void);
-void extiRegisterHandler(Pin_t pin, ExtiHandler_t handler);
+void extiRegisterHandler(GPIO_Pin_t pin, ExtiHandler_t handler);
 
-void extiInit(Pin_t pin, ExtiEdge);
-void extiClearFlag(Pin_t pin);
+void extiInit(GPIO_Pin_t pin, ExtiEdge);
+void extiClearFlag(GPIO_Pin_t pin);
 
 __attribute__((weak)) void EXTI0_User_Handler(void);
 __attribute__((weak)) void EXTI1_User_Handler(void);

@@ -1,4 +1,6 @@
-#include "../inc/exti.h"
+#include "../../../inc/exti.h"
+#if defined(STM32F103)
+
 static ExtiHandler_t exti_handlers[16] = {NULL};
 
 
@@ -9,7 +11,7 @@ void extiInit(Pin_t pin, ExtiEdge edge){
 	uint8_t index = pin_number/4;
 	uint8_t offset = (pin_number%4)*4;
 	AFIO->EXTICR[index] &= ~(0xF << offset);
-	AFIO->EXTICR[index] |= (gpioPortIndex(GPIOx) << offset);
+	AFIO->EXTICR[index] |= (GPIO_GetPortIndex(GPIOx) << offset);
 
 	EXTI->IMR |= (1 << pin_number);
 	if(edge == EXTI_RISING_EDGE){
@@ -102,3 +104,5 @@ void EXTI15_10_IRQHandler(void){
 	extiGroupDispatch(10, 15);
 	if(EXTI15_10_User_Handler) EXTI15_10_User_Handler();
 }
+
+#endif

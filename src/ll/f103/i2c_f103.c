@@ -1,7 +1,8 @@
-#include "../inc/i2c.h"
+#include "../../../inc/i2c.h"
+#if defined(STM32F103)
 
 void I2C_Init(I2C_TypeDef *I2Cx, Pin_t SDA, Pin_t SCL){
-	pinMode(SCL, GPIO_MODE_OUTPUT_10MHz, GPIO_CNF_PUSH_PULL, 0);
+	GPIO_PinMode(SCL, GPIO_MODE_OUTPUT_10MHz, GPIO_CNF_PUSH_PULL, 0);
 
 	// Генерируем 9 тактов, чтобы датчик "выплюнул" застрявший бит
 	// TODO сделать универсальнее на основе переданных SDA SCL
@@ -12,8 +13,8 @@ void I2C_Init(I2C_TypeDef *I2Cx, Pin_t SDA, Pin_t SCL){
 		for(volatile int d = 0; d < 500; d++);
 	}
 
-	pinMode(SDA, GPIO_MODE_OUTPUT_2MHz, GPIO_CNF_OPEN_DRAIN_ALT, 0);
-	pinMode(SCL, GPIO_MODE_OUTPUT_2MHz, GPIO_CNF_OPEN_DRAIN_ALT, 0);
+	GPIO_PinMode(SDA, GPIO_MODE_OUTPUT_2MHz, GPIO_CNF_OPEN_DRAIN_ALT, 0);
+	GPIO_PinMode(SCL, GPIO_MODE_OUTPUT_2MHz, GPIO_CNF_OPEN_DRAIN_ALT, 0);
 
 	I2Cx->CR1 |= I2C_CR1_SWRST;
 	for(volatile int i = 0; i < 1000; i++);
@@ -33,8 +34,9 @@ void I2C_Start(I2C_TypeDef *I2Cx){
 
 
 static void I2C_WriteByte(I2C_TypeDef *I2Cx, uint8_t data){
+	uint32_t timeout = 10000;
 	I2Cx->DR = data;
-	while(!(I2Cx->SR1 & I2C_SR1_TXE));
+	while(!(I2Cx->SR1 & I2C_SR1_TXE) && timeout--);
 }
 
 
@@ -106,3 +108,4 @@ void I2C_Read_Burst(I2C_TypeDef *I2Cx, uint8_t devAddr, uint8_t regAddr, uint8_t
 	}
 
 }
+#endif
