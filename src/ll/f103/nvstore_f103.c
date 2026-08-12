@@ -1,26 +1,39 @@
-#include "../inc/nvstore.h"
+#include "../../../inc/nvstore.h"
+#if defined(STM32F103C6Tx)
 #include <stdint.h>
 #include <stddef.h>
 #include "../inc/flash_ll.h"
 
-#define NV_STATE_EMPTY 0xFFFFu
-#define NV_STATE_WRITING 0x7FFFu
-#define NV_STATE_VALID 0x0000u
+#define NV_COMMIT_MAGIC 0xA55AC33Cu
+#define NV_MAX_PAYLOAD  256u
 
-#define NV_MAX_PAYLOAD 256u
-
-typedef struct __attribute__((packed)) {
-    uint16_t state;
-    uint16_t version;
-    uint32_t magic;
-    uint32_t seq;
-    uint16_t payload_len;
-    uint16_t reserved;
+typedef struct {
+	uint32_t magic;
+	uint32_t seq;
+	uint16_t version;
+	uint16_t payload_len;
+	uint32_t reserved;
 } NV_HDR_t;
 
+typedef struct {
+	uint32_t crc32;
+	uint32_t commit;
+} NV_TAIL_t;
 
-static uint32_t align2(uint32_t x) { return (x + 1u) & ~1u; }
+_Static_assert(sizeof(NV_HDR_t) == 16u, "NV_HDR_t must be 16 bytes");
+_Static_assert(sizeof(NV_TAIL_t) == 8u,  "NV_TAIL_t must be 8 bytes");
 
+static uint32_t align8(uint32_t x){
+	return (x + 7u) & ~7u;
+}
+
+static uint32_t recordStep(uint16_t payload_len)
+{
+	uint32_t tail_offset =
+		align8((uint32_t)sizeof(NV_HDR_t) + payload_len);
+
+	return tail_offset + (uint32_t)sizeof(NV_TAIL_t);
+}
 
 static uint32_t otherPage(NVStore_t *store, uint32_t p){
 	NV_CFG_t *cfg = &store->cfg;
@@ -271,3 +284,4 @@ NV_Status_t NV_Save(NVStore_t *store, const void* payload, size_t len){
 uint32_t NV_LastSeq(const NVStore_t *store){
 	return store->last_seq;
 }
+#endif

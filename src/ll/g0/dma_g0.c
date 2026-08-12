@@ -99,4 +99,19 @@ void SPI1_DMA_TX_Stop(){
 
 }
 
+uint8_t DMA_IsReady(DMA_Channel_TypeDef *DMAx)
+{
+    uint8_t index = DMA_GetChannelIndex(DMAx);
+    if (index == 0xFFu) return 0u;
+
+    uint32_t tc_mask = DMA_ISR_TCIF1 << (index * 4u);
+
+    if ((DMA1->ISR & tc_mask) == 0u)
+        return 0u;
+
+    /* Сбрасываем флаг, чтобы следующий проход снова дал Ready */
+    DMA1->IFCR = DMA_IFCR_CTCIF1 << (index * 4u);
+
+    return 1u;
+}
 #endif
