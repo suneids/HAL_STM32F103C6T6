@@ -2,7 +2,7 @@
 #include "../../../inc/tim.h"   // пока только ради RCC_GetPclk1_Hz()
 #include "../../../inc/gpio.h"
 
-#if defined(STM32G0B1xx)
+#if defined(DSTM32G474CEUx)
 
 #define FDCAN_TQ_PER_BIT       16u
 #define FDCAN_NTSEG1           13u

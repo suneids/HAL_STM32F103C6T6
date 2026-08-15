@@ -1,5 +1,5 @@
 #include "../../../inc/gpio.h"
-#if defined(STM32G0B1xx)
+#if defined(DSTM32G474CEUx)
 
 
 static void GPIO_ClockEnable(GPIO_Pin_t pin){

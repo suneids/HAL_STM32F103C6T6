@@ -1,6 +1,6 @@
 #include "../../../inc/dma.h"
 
-#if defined(STM32G0B1xx)
+#if defined(DSTM32G474CEUx)
 
 #ifndef DMA_REQUEST_ADC1
 #define DMA_REQUEST_ADC1 5u

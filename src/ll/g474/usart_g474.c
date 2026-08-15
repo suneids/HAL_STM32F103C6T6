@@ -3,7 +3,7 @@
 #include "../../../inc/gpio.h"
 #include "../../../inc/tim.h"
 
-#if defined(STM32G0B1xx)
+#if defined(DSTM32G474CEUx)
 
 static void USART_RXHandler_Default(UART_HandleTypeDef* huart, uint8_t byte);
 static void USART_TXHandler_Default(UART_HandleTypeDef* huart);

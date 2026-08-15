@@ -1,5 +1,5 @@
 #include "../../../inc/tim.h"
-#if defined(STM32G0B1xx)
+#if defined(DSTM32G474CEUx)
 
 volatile uint32_t msTicks = 0;
 static TimHandler_t tim_handlers[3] = {NULL, NULL, NULL};

@@ -1,6 +1,6 @@
 #include "../../../inc/adc.h"
 
-#if defined(STM32G0B1xx)
+#if defined(DSTM32G474CEUx)
 
 uint8_t getChannelNumber(GPIO_Pin_t pin){
 	if(pin.port == GPIOA) return pin.number;

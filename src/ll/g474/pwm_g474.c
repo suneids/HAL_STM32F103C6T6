@@ -1,5 +1,5 @@
 #include "../../../inc/pwm.h"
-#if defined(STM32G0B1xx)
+#if defined(DSTM32G474CEUx)
 
 
 const uint32_t CCER_CCxE[4] =   { TIM_CCER_CC1E, TIM_CCER_CC2E,

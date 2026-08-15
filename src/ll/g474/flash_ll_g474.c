@@ -1,6 +1,6 @@
 #include "../../../inc/flash_ll.h"
 #include <stdint.h>
-#if defined(STM32G0B1xx)
+#if defined(DSTM32G474CEUx)
 #define FLASH_LL_KEY1  0x45670123UL
 #define FLASH_LL_KEY2  0xCDEF89ABUL
 #define FLASH_LL_PAGE_SIZE  2048u

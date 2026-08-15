@@ -1,6 +1,6 @@
 #include "../../../inc/dac.h"
 
-#if defined(STM32G0B1xx)
+#if defined(DSTM32G474CEUx)
 
 void DAC_Init(void) {
     // Включаем тактирование DAC1

@@ -1,5 +1,5 @@
 #include "../../../inc/mcu_config.h"
-#if defined(STM32G0B1xx)
+#if defined(DSTM32G474CEUx)
 #include "../../../inc/nvstore.h"
 #include "../../../inc/flash_ll.h"
 

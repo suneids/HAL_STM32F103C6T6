@@ -1,6 +1,6 @@
 #include "../../../inc/i2c.h"
 #include <stdbool.h>
-#if defined(STM32G0B1CBTx)
+#if defined(DSTM32G474CEUx)
 
 #define I2C_TIMEOUT 10000u
 #define I2C_TIMING_100KHZ 0x00303D5Bu
